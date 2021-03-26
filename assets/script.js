@@ -75,7 +75,7 @@ function renderHistory(){
 }
 
 function renderForecast(cityName) {
-    fetch("http://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&appid=" + API_KEY)
+    fetch("http://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&units=metric&appid=" + API_KEY)
     .then(function(response){
         return response.json()
     })
@@ -95,6 +95,23 @@ function createForecast(date, temp, humidity){
     console.log(date);
     console.log(temp);
     console.log(humidity);
+    let $div = $('<div>');
+    $div.attr("class", "col");
+    let $card = $('<article>');
+    $card.addClass("card day")
+    let $cardBody = $('<div>');
+    $cardBody.addClass("card-body");
+    let $title = $('<h3>');
+    let $temp = $('<p>');
+    $temp.text("Temp: " + temp);
+    $title.addClass("card-title date")
+    $title.text(date);
+
+    $div.append($card);
+    $card.append($cardBody);
+    $cardBody.append($title)
+    $cardBody.append($temp)
+    $forecast.append($div);
 }
 
 renderHistory();
