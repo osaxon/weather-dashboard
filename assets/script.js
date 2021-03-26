@@ -1,12 +1,20 @@
 let $city = $('.city');
 let $search = $('.search');
 let $searchHist = $('.search-history')
+let $dayCard = $('.day');
+let $forecast = $('.forecast');
 let $searchBtn = $search.children().eq(1);
+let $cName = $('.city-name');
+let $cTemp = $('.temp');
+let $cHum = $('.humidity')
+
 const API_KEY = 'dda4fd5a4e43b1b488ab9b9eda5872c0'
 const cityData = [];
 
 // get search history or create an empty array for use later
 let prevSearches = JSON.parse(localStorage.getItem("searches")) || [];
+let weatherForecast = [];
+let d = new Date();
 
 function getCities (lat, lon, cnt) {
     fetch('http://api.openweathermap.org/data/2.5/find?lat=' + lat + '&lon=' + lon + '&cnt=' + cnt + '&appid=' + API_KEY)
@@ -19,10 +27,9 @@ function getCities (lat, lon, cnt) {
 }
 
 
-//getCities(53.74, -2.24, 10);
-
 // get current weather conditions and display data to main card
 function renderWeather(cityName) {
+    
     fetch('http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&appid=' + API_KEY)
     .then(function(response) {
         if(response.ok){
@@ -37,10 +44,9 @@ function renderWeather(cityName) {
         let icon = weather[0].icon;
         let $iconEl = $('<img>');
         $iconEl.attr("src", "https://openweathermap.org/img/w/" + icon + ".png")
-        $city.children().eq(0).append($iconEl)
-        $city.children().eq(0).text(city)
-        $city.children().eq(1).text("Temp: " + data.main.temp + " degrees celcius")
-        $city.children().eq(2).text("Humidy: " + data.main.humidity + "%")
+        $cName.text(city);
+        $cTemp.text("Temp: " + data.main.temp + " degrees celcius")
+        $cHum.text("Humidy: " + data.main.humidity + "%")
         saveSearch(city)
         renderHistory();
     })
@@ -49,12 +55,10 @@ function renderWeather(cityName) {
 
 // save the search history
 function saveSearch(cityName) {
-    console.log(prevSearches.indexOf(cityName))
     if(prevSearches.indexOf(cityName) === -1){
         prevSearches.push(cityName);
         localStorage.setItem("searches",JSON.stringify(prevSearches))
     } else if(prevSearches.indexOf(cityName) > -1){
-        console.log("already in list")
         return;
     }
 }
@@ -70,26 +74,46 @@ function renderHistory(){
     })
 }
 
-function getForecast(cityName) {
+function renderForecast(cityName) {
     fetch("http://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&appid=" + API_KEY)
     .then(function(response){
         return response.json()
     })
     .then(function(data){
+        //console.log(data.list.length);
+        for(let i = 0; i != data.list.length; i += 8){
+            let date = data.list[i].dt_txt;
+            let temp = data.list[i].main.temp;
+            let humidity = data.list[i].main.humidity;
+            createForecast(date, temp, humidity);
+        }
     })
+}
+
+function createForecast(date, temp, humidity){
+    //
+    console.log(date);
+    console.log(temp);
+    console.log(humidity);
 }
 
 renderHistory();
 
 $searchBtn.on("click", function(){
+    $city.show();
+    $forecast.show()
     renderWeather($search.children().eq(0).val());
-    getForecast($search.children().eq(0).val());
+    renderForecast($search.children().eq(0).val());
 })
 
 // search via search history
 $searchHist.on("click", function(event){
+    $city.show();
+    $forecast.show();
     renderWeather(event.target.textContent)
+    renderForecast(event.target.textContent)
 })
+
 
 
 
