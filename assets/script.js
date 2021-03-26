@@ -47,6 +47,15 @@ function saveSearch(cityName) {
     }
 }
 
+function renderHistory(){
+    prevSearches.forEach(function(element){
+        let newLi = $('<li>');
+        newLi.text(element);
+        newLi.appendTo($searchHist);
+    })
+}
+
+renderHistory();
 
 $searchBtn.on("click", function(){
     renderWeather($search.children().eq(0).val());
