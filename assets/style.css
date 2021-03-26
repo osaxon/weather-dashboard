@@ -1,0 +1,10 @@
+.icon {
+    background-image: url("http://openweathermap.org/img/wn/10d@2x.png");
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.day {
+    background-color: rgb(0, 94, 255);
+}
