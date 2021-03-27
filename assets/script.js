@@ -5,8 +5,7 @@ let $dayCard = $('.day');
 let $forecast = $('.forecast');
 let $searchBtn = $search.children().eq(1);
 let $cName = $('.city-name');
-let $cTemp = $('.temp');
-let $cHum = $('.humidity')
+
 
 const API_KEY = 'dda4fd5a4e43b1b488ab9b9eda5872c0'
 const cityData = [];
@@ -38,12 +37,17 @@ function renderWeather(cityName) {
         };
     })
     .then(function(data) {
+        let lat = data.coord.lat;
+        let lon = data.coord.lon;
+        getUV(lat, lon)
+        let $cTemp = $('.temp');
+        let $cHum = $('.humidity');
+        let $wind = $('.wind-speed');
+        $wind.text("Wind speed: " + data.wind.speed + "mph")
         console.log(data)
         let city = data.name;
         let weather = data.weather;
         let icon = weather[0].icon;
-        let lat = data.coord.lat;
-        let lon = data.coord.lon;
         console.log(lat)
         console.log(lon)
         let $iconEl = $('<img>');
@@ -55,7 +59,6 @@ function renderWeather(cityName) {
         $cHum.text("Humidy: " + data.main.humidity + "%")
         saveSearch(city)
         renderHistory();
-        getUV(lat, lon)
     })
     .catch(console.error)
 }
@@ -70,8 +73,23 @@ function getUV(lat, lon) {
         };
     })
     .then(function(data) {
+        let UVIndex = data.current.uvi;
+        let condition = '';
+        if(UVIndex > 8) {
+            condition = 'bg-danger'
+        } else if(UVIndex > 5 && UVIndex < 8){
+            condition = 'bg-warning'
+        } else if (UVIndex > 2 && UVIndex < 6){
+            condition = 'bg-warning'
+        } else {
+            condition = 'bg-primary'
+        }
         let $UV = $('.UV');
-        $UV.text("UV Index: " + data.current.uvi)
+        let badge = $('<span>');
+        badge.addClass("badge");
+        badge.addClass(condition)
+        $UV.append(badge)
+        badge.text(UVIndex)
     })
 };
 
