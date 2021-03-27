@@ -16,7 +16,7 @@ let weatherForecast = [];
 let d = new Date();
 
 function getCities (lat, lon, cnt) {
-    fetch('http://api.openweathermap.org/data/2.5/find?lat=' + lat + '&lon=' + lon + '&cnt=' + cnt + '&appid=' + API_KEY)
+    fetch('https://api.openweathermap.org/data/2.5/find?lat=' + lat + '&lon=' + lon + '&cnt=' + cnt + '&appid=' + API_KEY)
     .then(function(response) {
         return response.json();
     })
@@ -28,7 +28,7 @@ function getCities (lat, lon, cnt) {
 
 // get current weather conditions and display data to main card
 function renderWeather(cityName) {
-    fetch('http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&appid=' + API_KEY)
+    fetch('https://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&appid=' + API_KEY)
     .then(function(response) {
         if(response.ok){
             return response.json();
@@ -85,6 +85,7 @@ function getUV(lat, lon) {
             condition = 'bg-primary'
         }
         let $UV = $('.UV');
+        $UV.text("UV Index: ")
         let badge = $('<span>');
         badge.addClass("badge");
         badge.addClass(condition)
@@ -126,16 +127,18 @@ function renderForecast(cityName) {
     .then(function(data){
         //console.log(data.list.length);
         // every 8 elements is a new day
+        console.log(data)
         for(let i = 8; i != data.list.length; i += 8){
             let date = data.list[i].dt_txt;
             let temp = data.list[i].main.temp;
             let humidity = data.list[i].main.humidity;
-            createForecast(date, temp, humidity);
+            let icon = data.list[i].weather[0].icon;
+            createForecast(date, temp, humidity, icon);
         }
     })
 }
 
-function createForecast(date, temp, humidity){
+function createForecast(date, temp, humidity, icon){
     //$forecast.empty();
     let $div = $('<div>');
     $div.attr("class", "col");
@@ -145,14 +148,19 @@ function createForecast(date, temp, humidity){
     $cardBody.addClass("card-body");
     let $title = $('<h5>');
     let $temp = $('<p>');
+    $temp.addClass('text-light');
     $title.addClass('text-light')
+    let $iconEl = $('<img>');
+    $iconEl.attr("src", "https://openweathermap.org/img/w/" + icon + ".png")
     $temp.text("Temp: " + temp);
+    $temp.append("<span>&#8451;</span>")
     $title.addClass("card-title date")
     $title.text(date);
     $div.append($card);
     $card.append($cardBody);
     $cardBody.append($title)
     $cardBody.append($temp)
+    $cardBody.append($iconEl)
     $forecast.append($div);
 }
 
