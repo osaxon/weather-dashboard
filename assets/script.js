@@ -120,7 +120,7 @@ function renderForecast(cityName) {
     let $h3 = $('<h3>');
     $h3.text("5-Day Forecast:")
     $forecast.append($h3)
-    fetch("http://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&units=metric&appid=" + API_KEY)
+    fetch("https://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&units=metric&appid=" + API_KEY)
     .then(function(response){
         return response.json()
     })
