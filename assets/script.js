@@ -29,7 +29,6 @@ function getCities (lat, lon, cnt) {
 
 // get current weather conditions and display data to main card
 function renderWeather(cityName) {
-    
     fetch('http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&appid=' + API_KEY)
     .then(function(response) {
         if(response.ok){
@@ -39,19 +38,42 @@ function renderWeather(cityName) {
         };
     })
     .then(function(data) {
+        console.log(data)
         let city = data.name;
         let weather = data.weather;
         let icon = weather[0].icon;
+        let lat = data.coord.lat;
+        let lon = data.coord.lon;
+        console.log(lat)
+        console.log(lon)
         let $iconEl = $('<img>');
         $iconEl.attr("src", "https://openweathermap.org/img/w/" + icon + ".png")
         $cName.text(city);
-        $cTemp.text("Temp: " + data.main.temp + " degrees celcius")
+        $cName.append($iconEl)
+        $cTemp.text("Temp: " + data.main.temp)
+        $cTemp.append("<span>&#8451;</span>")
         $cHum.text("Humidy: " + data.main.humidity + "%")
         saveSearch(city)
         renderHistory();
+        getUV(lat, lon)
     })
     .catch(console.error)
 }
+
+function getUV(lat, lon) {
+    fetch("https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude={part}&appid=" + API_KEY)
+    .then(function(response) {
+        if(response.ok){
+            return response.json();
+        } else {
+            throw Error("Rejected with status: " + response.status)
+        };
+    })
+    .then(function(data) {
+        let $UV = $('.UV');
+        $UV.text("UV Index: " + data.current.uvi)
+    })
+};
 
 // save the search history
 function saveSearch(cityName) {
@@ -61,7 +83,7 @@ function saveSearch(cityName) {
     } else if(prevSearches.indexOf(cityName) > -1){
         return;
     }
-}
+};
 
 // display previous searches
 function renderHistory(){
@@ -75,13 +97,18 @@ function renderHistory(){
 }
 
 function renderForecast(cityName) {
+    $forecast.empty();
+    let $h3 = $('<h3>');
+    $h3.text("5-Day Forecast:")
+    $forecast.append($h3)
     fetch("http://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&units=metric&appid=" + API_KEY)
     .then(function(response){
         return response.json()
     })
     .then(function(data){
         //console.log(data.list.length);
-        for(let i = 0; i != data.list.length; i += 8){
+        // every 8 elements is a new day
+        for(let i = 8; i != data.list.length; i += 8){
             let date = data.list[i].dt_txt;
             let temp = data.list[i].main.temp;
             let humidity = data.list[i].main.humidity;
@@ -91,22 +118,19 @@ function renderForecast(cityName) {
 }
 
 function createForecast(date, temp, humidity){
-    //
-    console.log(date);
-    console.log(temp);
-    console.log(humidity);
+    //$forecast.empty();
     let $div = $('<div>');
     $div.attr("class", "col");
     let $card = $('<article>');
     $card.addClass("card day")
     let $cardBody = $('<div>');
     $cardBody.addClass("card-body");
-    let $title = $('<h3>');
+    let $title = $('<h5>');
     let $temp = $('<p>');
+    $title.addClass('text-light')
     $temp.text("Temp: " + temp);
     $title.addClass("card-title date")
     $title.text(date);
-
     $div.append($card);
     $card.append($cardBody);
     $cardBody.append($title)
@@ -114,7 +138,12 @@ function createForecast(date, temp, humidity){
     $forecast.append($div);
 }
 
-renderHistory();
+setUp();
+
+function setUp(){
+    $forecast.empty();
+    renderHistory();
+}
 
 $searchBtn.on("click", function(){
     $city.show();
@@ -126,7 +155,6 @@ $searchBtn.on("click", function(){
 // search via search history
 $searchHist.on("click", function(event){
     $city.show();
-    $forecast.show();
     renderWeather(event.target.textContent)
     renderForecast(event.target.textContent)
 })
